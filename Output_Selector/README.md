@@ -27,4 +27,10 @@ Based on the image above, the output structure will be:
     - v002_0001.jpg
     - ...
 
-    
+
+## TODO
+
+- [ ] Prompt if you want to overwrite already rendered files 
+- [ ] Custom in and out points
+- [ ] Select render engine
+- [ ]  Custom version per output
