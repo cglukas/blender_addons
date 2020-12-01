@@ -33,4 +33,6 @@ Based on the image above, the output structure will be:
 - [ ] Prompt if you want to overwrite already rendered files 
 - [ ] Custom in and out points
 - [ ] Select render engine
-- [ ]  Custom version per output
+- [ ] Select filetype
+- [ ] Custom version per output
+- [ ] Restore original output properties after render
