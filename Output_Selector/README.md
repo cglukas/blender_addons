@@ -30,9 +30,9 @@ Based on the image above, the output structure will be:
 
 ## TODO
 
-- [ ] Prompt if you want to overwrite already rendered files 
+- [x] Prompt if you want to overwrite already rendered files 
 - [x] Custom in and out points
 - [x] Select render engine
 - [ ] Select filetype
-- [ ] Custom version per output
+- [x] Custom version per output
 - [x] Restore original output properties after render
