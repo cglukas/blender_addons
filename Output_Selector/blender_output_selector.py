@@ -43,8 +43,7 @@ class OutputSettings(bpy.types.PropertyGroup):
     file_name: bpy.props.StringProperty(name="Filename")
     render_engine: bpy.props.EnumProperty(name="Override Engine",
                                         description="Override Render Engine",
-                                        items={
-                                        ('NONE', 'None', 'Don´t override engine', 0),
+                                        items={('NONE', 'None', 'Don´t override engine', 0),
                                         ('BLENDER_WORKBENCH', 'Workbench', 'Render with workbench', 1),
                                         ('BLENDER_EEVEE', 'Eevee', 'Render with eevee', 2),
                                         ('CYCLES', 'Cylces', 'Render with cycles', 3),
@@ -53,7 +52,11 @@ class OutputSettings(bpy.types.PropertyGroup):
     custom_range: bpy.props.BoolProperty(name='Custom Range')
     in_point: bpy.props.IntProperty(name='In')
     out_point: bpy.props.IntProperty(name='Out')
-    
+    percentage: bpy.props.IntProperty(name='Percentage',
+                                    subtype="PERCENTAGE",
+                                    min=0,
+                                    max=100,
+                                    default=100)
     #filetype: bpy.props.CollectionProperty(type=bpy.types.ImageFormatSettings.bl_rna)
     
     
@@ -116,6 +119,10 @@ class RenderOutputPanel(bpy.types.Panel):
             r = props.row()
             r.prop(item, "in_point")
             r.prop(item, "out_point")
+            
+            #Percentage override
+            labels.label(text="Percentage")
+            props.prop(item, "percentage", text="")
             
             #Operators
             split = layout.split(factor=0.75)
@@ -210,6 +217,7 @@ class RenderOutput(bpy.types.Operator):
         render_engine_tmp = scene.render.engine
         in_tmp = scene.frame_start
         out_tmp = scene.frame_end 
+        percentage_tmp = scene.render.resolution_percentage
         
         def reset_settings(dummy):
             scene.camera = camera_tmp
@@ -217,8 +225,10 @@ class RenderOutput(bpy.types.Operator):
             scene.render.engine = render_engine_tmp
             scene.frame_start = in_tmp
             scene.frame_end = out_tmp
+            scene.render.resolution_percentage = percentage_tmp
             bpy.app.handlers.render_complete.remove(reset_settings)
             bpy.app.handlers.render_cancel.remove(reset_settings)
+            
         #Set camera
         if render_settings.camera is not None:      
             print("NOT NONE")      
@@ -233,10 +243,14 @@ class RenderOutput(bpy.types.Operator):
             open_gl = True
         elif render_settings.render_engine != 'NONE':
             scene.render.engine = render_settings.render_engine
+            
         #Override in and out
         if render_settings.custom_range:
             scene.frame_start = render_settings.in_point
             scene.frame_end = render_settings.out_point
+        
+        #Percentage
+        scene.render.resolution_percentage = render_settings.percentage
         
         #Start render
         if open_gl:
