@@ -36,3 +36,4 @@ Based on the image above, the output structure will be:
 - [ ] Select filetype
 - [x] Custom version per output
 - [x] Restore original output properties after render
+- [ ] Playback rendered frames
