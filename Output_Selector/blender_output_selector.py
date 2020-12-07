@@ -43,7 +43,8 @@ class OutputSettings(bpy.types.PropertyGroup):
     file_name: bpy.props.StringProperty(name="Filename")
     render_engine: bpy.props.EnumProperty(name="Override Engine",
                                         description="Override Render Engine",
-                                        items={('NONE', 'None', 'Don´t override engine', 0),
+                                        items={
+                                        ('NONE', 'None', 'Don´t override engine', 0),
                                         ('BLENDER_WORKBENCH', 'Workbench', 'Render with workbench', 1),
                                         ('BLENDER_EEVEE', 'Eevee', 'Render with eevee', 2),
                                         ('CYCLES', 'Cylces', 'Render with cycles', 3),
@@ -57,6 +58,7 @@ class OutputSettings(bpy.types.PropertyGroup):
                                     min=0,
                                     max=100,
                                     default=100)
+    rendered_path: bpy.props.StringProperty()
     #filetype: bpy.props.CollectionProperty(type=bpy.types.ImageFormatSettings.bl_rna)
     
     
@@ -125,12 +127,15 @@ class RenderOutputPanel(bpy.types.Panel):
             props.prop(item, "percentage", text="")
             
             #Operators
-            split = layout.split(factor=0.75)
+            split = layout.split(factor=0.33)
             c1 = split.column()
             c2 = split.column()
+            c3 = split.column()
             c1.operator("render_output.render", 
                          text="Render Output", icon="RENDER_ANIMATION").id = item.id
-            c2.operator("render_output.remove",
+            c2.operator("render_output.play",
+                         text="Play Render", icon="PLAY").id = item.id
+            c3.operator("render_output.remove",
                          text="Remove", icon="CANCEL").id = item.id
             #image_settings = context.scene.render.image_settings
             #layout.template_image_settings(image_settings, color_management=False) 
@@ -236,6 +241,7 @@ class RenderOutput(bpy.types.Operator):
         
         #Set output path
         scene.render.filepath = self.combine_path(context)
+        render_settings.rendered_path = scene.render.filepath
         
         #Override render engine
         open_gl = False
@@ -270,13 +276,33 @@ class RenderOutput(bpy.types.Operator):
         bpy.app.handlers.render_cancel.append(reset_settings)
         return {'FINISHED'}
     
+class ViewRender(bpy.types.Operator):
+    """Shows the rendered files in the blender player"""
+    bl_idname = "render_output.play"
+    bl_label = "Play rendered files"
+    
+    id: bpy.props.IntProperty()
+    
+    def execute(self, context):
+        scene = context.scene 
+        
+        for item in scene.render_outputs:
+            if item.id is self.id:
+                render_settings = item
+        
+        filepath_tmp = scene.render.filepath       
+        scene.render.filepath = render_settings.rendered_path
+        bpy.ops.render.play_rendered_anim()
+        scene.render.filepath = filepath_tmp
+        return {'FINISHED'} 
 
 classes = (RenderOutputPanel,
            RenderOutputSettings,
            OutputSettings,
            AddOutput,
            RemoveOutput,
-           RenderOutput) 
+           RenderOutput,
+           ViewRender) 
     
 def register():
     for cls in classes:
